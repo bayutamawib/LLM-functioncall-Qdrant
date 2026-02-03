@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Retail Chatbot</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; }
+    #chat-box { border: 1px solid #ccc; padding: 20px; width: 500px; }
+    #answer { margin-top: 20px; white-space: pre-line; }
+  </style>
+</head>
+<body>
+  <h1>Retail Chatbot</h1>
+  <div id="chat-box">
+    <form id="chat-form">
+      <input type="text" name="question" placeholder="Ask me something..." size="50" required>
+      <button type="submit">Send</button>
+    </form>
+    <div id="answer"></div>
+  </div>
+
+  <script>
+    document.getElementById("chat-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const response = await fetch("/chat", {
+        method: "POST",
+        body: formData
+      });
+      const text = await response.text();
+      document.getElementById("answer").innerText = text;
+    });
+  </script>
+</body>
+</html>
+

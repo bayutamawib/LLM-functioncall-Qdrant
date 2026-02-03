@@ -1,0 +1,44 @@
+version: "3.8"
+
+services:
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: qdrant
+    ports:
+      - "6333:6333"   # REST API
+      - "6334:6334"   # gRPC (optional)
+    volumes:
+      - qdrant_storage:/qdrant/storage
+    environment:
+      QDRANT__SERVICE__HOST: "0.0.0.0"
+      QDRANT__SERVICE__HTTP_PORT: 6333
+      QDRANT__SERVICE__GRPC_PORT: 6334
+      QDRANT__CLUSTER__ENABLED: "false"
+      QDRANT__STORAGE__OPTIMIZER__DEFAULT_SEGMENT_NUMBER: 2
+    healthcheck:
+      test: ["CMD", "wget", "-q", "http://localhost:6333/healthz", "-O", "-", "||", "exit", "1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile.gateway
+    container_name: qdrant-gateway
+    environment:
+      QDRANT_HOST: qdrant
+      QDRANT_PORT: "6333"
+      VECTOR_SIZE: "1536"   # match your embedding model
+    ports:
+      - "8000:8000"
+    depends_on:
+      qdrant:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  qdrant_storage:
+
+
